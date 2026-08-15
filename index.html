@@ -53,10 +53,15 @@
             chatInput.value = '';
             
             const loadingBubble = appendMessage("Thinking...", 'bot');
-            const secureDataUrl = `${WEBHOOK_URL}?text=${encodeURIComponent(text)}`;
 
             try {
-                const response = await fetch(secureDataUrl, { method: 'GET', mode: 'cors' });
+                // Sends message directly via application/json body layout matching your Activepieces configuration
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+
                 const rawText = await response.text();
                 loadingBubble.textContent = rawText || "Response empty, check Activepieces history.";
             } catch (error) {
