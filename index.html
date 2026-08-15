@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Support Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: transparent; margin: 0; padding: 0; }
+        .chat-container { width: 100%; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #BFC3D0; }
+        .chat-header { background: #C026D3; color: white; padding: 18px 24px; font-weight: bold; font-size: 16px; letter-spacing: 0.5px; }
+        .chat-messages { height: 280px; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #F6F6FA; }
+        .message { max-width: 75%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.5; }
+        .message.user { background: #1E124C; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .message.bot { background: #BFC3D0; color: #1E124C; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-input-area { display: flex; border-top: 1px solid #BFC3D0; padding: 15px 24px; background: white; align-items: center; }
+        .chat-input { flex: 1; border: 1px solid #BFC3D0; border-radius: 24px; padding: 10px 20px; outline: none; font-size: 14px; }
+        .chat-submit { background: #C026D3; color: white; border: none; border-radius: 50%; width: 38px; height: 38px; margin-left: 12px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+        .chat-submit:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">🪪 Platform Support Assistant</div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">Hello! How can I help you with Canva, n8n, Zoho, Manychat, Lemon Squeezy, or Linktree today?</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Type a message...">
+            <button id="chatSubmit" class="chat-submit">&#10142;</button>
+        </div>
+    </div>
+    <script>
+        const WEBHOOK_URL = "https://activepieces.com";
+        
+        const chatInput = document.getElementById('chatInput');
+        const chatSubmit = document.getElementById('chatSubmit');
+        const chatMessages = document.getElementById('chatMessages');
+
+        function appendMessage(text, sender) {
+            const msg = document.createElement('div');
+            msg.classList.add('message', sender);
+            msg.textContent = text;
+            chatMessages.appendChild(msg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return msg;
+        }
+
+        async function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            chatInput.value = '';
+            
+            const loadingBubble = appendMessage("Thinking...", 'bot');
+            const secureDataUrl = `${WEBHOOK_URL}?text=${encodeURIComponent(text)}`;
+
+            try {
+                const response = await fetch(secureDataUrl, { method: 'GET', mode: 'cors' });
+                const rawText = await response.text();
+                loadingBubble.textContent = rawText || "Response empty, check Activepieces history.";
+            } catch (error) {
+                loadingBubble.textContent = "AI error. Make sure your Activepieces workflow is Published.";
+                console.error(error);
+            }
+        }
+
+        chatSubmit.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendMessage(); });
+    </script>
+</body>
+</html>
