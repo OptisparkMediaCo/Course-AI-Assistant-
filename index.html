@@ -30,8 +30,7 @@
         </div>
     </div>
     <script>
-        // Appended /sync route to allow real-time response reading across cross-origins
-        const WEBHOOK_URL = "https://cloud.activepieces.com/api/v1/webhooks/N0wER84mg7sDnQqzofNog";
+        const BASE_WEBHOOK = "https://cloud.activepieces.com/api/v1/webhooks/N0wER84mg7sDnQqzofNog";
         
         const chatInput = document.getElementById('chatInput');
         const chatSubmit = document.getElementById('chatSubmit');
@@ -56,21 +55,24 @@
             const loadingBubble = appendMessage("Thinking...", 'bot');
 
             try {
-                const response = await fetch(WEBHOOK_URL, {
+                // Adds a unique timestamp param to bust iframe proxy caches forcing Google Sites to request live data
+                const cacheBusterUrl = `${BASE_WEBHOOK}?t=${new Date().getTime()}`;
+
+                const response = await fetch(cacheBusterUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text: text })
                 });
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP Error Status: ${response.status}`);
                 }
 
                 const rawText = await response.text();
-                loadingBubble.textContent = rawText || "Response empty, check Activepieces history.";
+                loadingBubble.textContent = rawText || "Response came back empty. Please review your active Activepieces execution steps.";
             } catch (error) {
-                loadingBubble.textContent = "AI error or connection blocked. Make sure your Activepieces workflow is Published.";
-                console.error("Error details:", error);
+                loadingBubble.textContent = "Connection issue. Verify your Activepieces flow status is published.";
+                console.error("Network diagnostics:", error);
             }
         }
 
